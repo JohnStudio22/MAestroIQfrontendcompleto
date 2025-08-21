@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd dashboard_api/frontend && npm install && npm run build",
+  "outputDirectory": "dashboard_api/frontend/build",
+  "installCommand": "cd dashboard_api/frontend && npm install",
+  "framework": "create-react-app"
+}

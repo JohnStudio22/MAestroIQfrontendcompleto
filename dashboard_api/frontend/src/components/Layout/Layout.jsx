@@ -3,6 +3,7 @@ import { Box, useTheme } from '@mui/material';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import { styled } from '@mui/material/styles';
+import ConfigDebugger from '../common/ConfigDebugger';
 
 // Componente principal con fondo oscuro
 const GradientOverlay = styled(Box)(({ theme }) => ({
@@ -52,6 +53,7 @@ const Layout = ({ children }) => {
           <GradientOverlay />
           {/* 3. Flechas y botón "Ver todas" (estos ya tienen z-index: 20) */}
         </ContentContainer>
+        <ConfigDebugger />
       </MainContent>
     </Box>
   );

@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 // Base URL de la API
-const API_MODE = process.env.REACT_APP_MODE || 'beta_v1';
+const API_MODE = process.env.REACT_APP_MODE || 'beta_v2';
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 const API_BASE_URL = `${API_URL}/${API_MODE}`;
 

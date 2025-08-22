@@ -223,7 +223,7 @@ const MediafyAPI = () => {
   };
 
   const renderProfileResults = () => {
-    if (!data.data) return null;
+    if (!data || !data.data) return null;
     
     const profileData = data.data;
     
@@ -282,7 +282,7 @@ const MediafyAPI = () => {
               <Card elevation={2}>
                 <CardContent sx={{ textAlign: 'center' }}>
                   <Typography variant="h4" color="success.main">
-                    {profileData.media_count?.toLocaleString() || 'N/A'}
+                    {profileData.total?.toLocaleString() || 'N/A'}
                   </Typography>
                   <Typography variant="body2">Posts</Typography>
                 </CardContent>
@@ -305,7 +305,7 @@ const MediafyAPI = () => {
   };
 
   const renderSearchPostsResults = () => {
-    if (!data.data || !data.data.items) return null;
+    if (!data || !data.data || !data.data.items) return null;
     
     return (
       <Grid container spacing={3}>
@@ -351,7 +351,7 @@ const MediafyAPI = () => {
   };
 
   const renderHashtagResults = () => {
-    if (!data.data) return null;
+    if (!data || !data.data) return null;
     
     const hashtagData = data.data;
     
@@ -361,13 +361,13 @@ const MediafyAPI = () => {
           <Card elevation={3}>
             <CardContent sx={{ textAlign: 'center' }}>
               <Typography variant="h4" gutterBottom>
-                #{hashtagData.name}
+                #{searchInputs.hashtag}
               </Typography>
               <Typography variant="h6" color="primary" gutterBottom>
-                {hashtagData.media_count?.toLocaleString() || 'N/A'} posts
+                {hashtagData.total?.toLocaleString() || 'N/A'} posts
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {hashtagData.description}
+                Hashtag analizado exitosamente
               </Typography>
             </CardContent>
           </Card>
@@ -377,7 +377,7 @@ const MediafyAPI = () => {
             Posts recientes del hashtag
           </Typography>
           <Grid container spacing={2}>
-            {hashtagData.recent_media?.map((post, index) => (
+            {hashtagData.items?.map((post, index) => (
               <Grid item xs={12} sm={6} key={index}>
                 <Card elevation={2}>
                   <CardContent>
@@ -403,7 +403,7 @@ const MediafyAPI = () => {
   };
 
   const renderSearchUsersResults = () => {
-    if (!data.data || !data.data.items) return null;
+    if (!data || !data.data || !data.data.items) return null;
     
     return (
       <Grid container spacing={3}>
@@ -457,7 +457,7 @@ const MediafyAPI = () => {
   };
 
   const renderLocationResults = () => {
-    if (!data.data) return null;
+    if (!data || !data.data) return null;
     
     const locationData = data.data;
     
@@ -470,7 +470,7 @@ const MediafyAPI = () => {
                 {locationData.name}
               </Typography>
               <Typography variant="h6" color="primary" gutterBottom>
-                {locationData.media_count?.toLocaleString() || 'N/A'} posts
+                {locationData.total?.toLocaleString() || 'N/A'} posts
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 {locationData.address}
@@ -483,7 +483,7 @@ const MediafyAPI = () => {
             Posts recientes de la ubicación
           </Typography>
           <Grid container spacing={2}>
-            {locationData.recent_media?.map((post, index) => (
+            {locationData.items?.map((post, index) => (
               <Grid item xs={12} sm={6} key={index}>
                 <Card elevation={2}>
                   <CardContent>
@@ -509,7 +509,7 @@ const MediafyAPI = () => {
   };
 
   const renderReelsResults = () => {
-    if (!data.data || !data.data.items) return null;
+    if (!data || !data.data || !data.data.items) return null;
     
     return (
       <Grid container spacing={3}>
@@ -555,7 +555,7 @@ const MediafyAPI = () => {
   };
 
   const renderStoriesResults = () => {
-    if (!data.data || !data.data.items) return null;
+    if (!data || !data.data || !data.data.items) return null;
     
     return (
       <Grid container spacing={3}>
@@ -591,7 +591,7 @@ const MediafyAPI = () => {
   };
 
   const renderHighlightsResults = () => {
-    if (!data.data || !data.data.items) return null;
+    if (!data || !data.data || !data.data.items) return null;
     
     return (
       <Grid container spacing={3}>
@@ -622,7 +622,7 @@ const MediafyAPI = () => {
   };
 
   const renderTaggedResults = () => {
-    if (!data.data || !data.data.items) return null;
+    if (!data || !data.data || !data.data.items) return null;
     
     return (
       <Grid container spacing={3}>

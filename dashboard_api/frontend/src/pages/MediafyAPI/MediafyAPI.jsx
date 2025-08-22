@@ -50,11 +50,15 @@ const MediafyAPI = () => {
     hashtag: '',
     location_query: ''
   });
+  const [locations, setLocations] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState(null);
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
     setData(null);
     setError('');
+    setLocations([]);
+    setSelectedLocation(null);
   };
 
   const handleInputChange = (field, value) => {
@@ -62,6 +66,26 @@ const MediafyAPI = () => {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleLocationSelect = async (location) => {
+    setSelectedLocation(location);
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axiosInstance.get('/api/beta_v2/mediafy/location_info', {
+        params: { location_id: location.id }
+      });
+      
+      if (response.data) {
+        setData(response.data);
+      }
+    } catch (err) {
+      setError('Error al obtener información de la ubicación: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSearch = async (e) => {
@@ -94,6 +118,23 @@ const MediafyAPI = () => {
         case 4: // Location
           endpoint = '/api/beta_v2/mediafy/location';
           params = { location_query: searchInputs.location_query };
+          
+          // Para location, primero buscamos las ubicaciones
+          try {
+            const locationResponse = await axiosInstance.get(endpoint, { params });
+            
+            if (locationResponse.data && locationResponse.data.data && locationResponse.data.data.items) {
+              setLocations(locationResponse.data.data.items);
+              setSelectedLocation(null);
+              setData(null);
+              setLoading(false);
+              return; // No continuamos con la búsqueda de posts
+            }
+          } catch (locationError) {
+            setError('Error al buscar ubicaciones: ' + (locationError.response?.data?.error || locationError.message));
+            setLoading(false);
+            return;
+          }
           break;
         case 5: // Reels
           endpoint = '/api/beta_v2/mediafy/reels';
@@ -196,7 +237,9 @@ const MediafyAPI = () => {
   };
 
   const renderResults = () => {
-    if (!data) return null;
+    console.log('🔍 [DEBUG] renderResults - data:', !!data, 'activeTab:', activeTab, 'locations:', locations.length);
+    
+    if (!data && activeTab !== 4) return null;
 
     switch (activeTab) {
       case 0: // Profile
@@ -457,55 +500,106 @@ const MediafyAPI = () => {
   };
 
   const renderLocationResults = () => {
-    if (!data || !data.data) return null;
+    console.log('🔍 [DEBUG] renderLocationResults - locations:', locations.length, 'selectedLocation:', !!selectedLocation);
     
-    const locationData = data.data;
-    
-    return (
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
-          <Card elevation={3}>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Typography variant="h4" gutterBottom>
-                {locationData.name}
-              </Typography>
-              <Typography variant="h6" color="primary" gutterBottom>
-                {locationData.total?.toLocaleString() || 'N/A'} posts
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {locationData.address}
-              </Typography>
-            </CardContent>
-          </Card>
+    // Si no hay ubicaciones seleccionadas, mostrar la lista de ubicaciones encontradas
+    if (locations.length > 0 && !selectedLocation) {
+      console.log('🔍 [DEBUG] Mostrando lista de ubicaciones');
+      return (
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Typography variant="h6" gutterBottom>
+              Ubicaciones encontradas: {locations.length} resultados
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Selecciona una ubicación para ver más detalles
+            </Typography>
+          </Grid>
+          {locations.map((location, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <Card 
+                elevation={2} 
+                sx={{ cursor: 'pointer', '&:hover': { elevation: 4 } }}
+                onClick={() => handleLocationSelect(location)}
+              >
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <LocationOn color="primary" sx={{ mr: 1 }} />
+                    <Typography variant="h6" color="primary">
+                      {location.name}
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    {location.city || location.address || 'Sin dirección'}
+                  </Typography>
+                  {location.latitude && location.longitude && (
+                    <Typography variant="caption" color="text.secondary">
+                      📍 {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+                    </Typography>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
         </Grid>
-        <Grid item xs={12} md={8}>
-          <Typography variant="h6" gutterBottom>
-            Posts recientes de la ubicación
-          </Typography>
-          <Grid container spacing={2}>
-            {locationData.items?.map((post, index) => (
-              <Grid item xs={12} sm={6} key={index}>
-                <Card elevation={2}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Avatar src={post.user?.profile_pic_url} sx={{ mr: 2 }} />
-                      <Box>
-                        <Typography variant="subtitle2">
-                          {post.user?.username}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {post.caption?.text?.substring(0, 100)}...
-                        </Typography>
+      );
+    }
+
+    // Si hay una ubicación seleccionada y datos, mostrar la información detallada
+    if (selectedLocation && data && data.data) {
+      const locationData = data.data;
+      
+      return (
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={4}>
+            <Card elevation={3}>
+              <CardContent sx={{ textAlign: 'center' }}>
+                <Typography variant="h4" gutterBottom>
+                  {locationData.name}
+                </Typography>
+                <Typography variant="h6" color="primary" gutterBottom>
+                  {locationData.media_count?.toLocaleString() || 'N/A'} posts
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {locationData.location_data?.address_street || locationData.location_data?.city_name || 'Sin dirección'}
+                </Typography>
+                {locationData.category && (
+                  <Chip label={locationData.category} color="primary" sx={{ mt: 1 }} />
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={8}>
+            <Typography variant="h6" gutterBottom>
+              Posts recientes de la ubicación
+            </Typography>
+            <Grid container spacing={2}>
+              {locationData.items?.map((post, index) => (
+                <Grid item xs={12} sm={6} key={index}>
+                  <Card elevation={2}>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Avatar src={post.user?.profile_pic_url} sx={{ mr: 2 }} />
+                        <Box>
+                          <Typography variant="subtitle2">
+                            {post.user?.username}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {post.caption?.text?.substring(0, 100)}...
+                          </Typography>
+                        </Box>
                       </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
           </Grid>
         </Grid>
-      </Grid>
-    );
+      );
+    }
+
+    return null;
   };
 
   const renderReelsResults = () => {

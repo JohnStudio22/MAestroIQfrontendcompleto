@@ -30,7 +30,7 @@ export const fetchDashboardStats = createAsyncThunk(
       }
 
       const response = await axios.get(
-        `${APP_CONFIG.API_URL}/api/beta_v2/stats/dashboard`,
+        `${API_CONFIG.STATS_URL}/dashboard`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,

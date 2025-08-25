@@ -30,6 +30,16 @@ export const APP_CONFIG = {
   }
 };
 
+// Configuración centralizada de la API
+export const API_CONFIG = {
+  MODE: process.env.REACT_APP_MODE || 'beta_v2',
+  BASE_URL: `${APP_CONFIG.API_URL}/api/${process.env.REACT_APP_MODE || 'beta_v2'}`,
+  AUTH_URL: `${APP_CONFIG.API_URL}/api/${process.env.REACT_APP_MODE || 'beta_v2'}/auth`,
+  APPS_URL: `${APP_CONFIG.API_URL}/api/${process.env.REACT_APP_MODE || 'beta_v2'}/apps`,
+  STATS_URL: `${APP_CONFIG.API_URL}/api/${process.env.REACT_APP_MODE || 'beta_v2'}/stats`,
+  CREDITS_URL: `${APP_CONFIG.API_URL}/api/${process.env.REACT_APP_MODE || 'beta_v2'}/credits`
+};
+
 // Validaciones
 export const VALIDATION = {
   EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,

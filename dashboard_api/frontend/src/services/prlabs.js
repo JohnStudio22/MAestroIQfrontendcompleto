@@ -1,15 +1,11 @@
 import axios from 'axios';
-
-const API_VERSION = 'beta_v2'; // O usa la variable dinámica que manejes en tu app
-// Asegúrate que REACT_APP_API_URL no incluya /api al final
-const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000').replace(/\/api$/, '');
-const API_BASE_URL = `${API_URL}/api/${API_VERSION}/prlabs`;
+import { API_CONFIG } from '../config/constants';
 
 const prlabsService = {
     // Chat
     async chat(prompt, model = 'gpt-4') {
         try {
-            const response = await axios.post(`${API_BASE_URL}/chat`, {
+            const response = await axios.post(`${API_CONFIG.BASE_URL}/prlabs/chat`, {
                 prompt,
                 model
             });
@@ -22,7 +18,7 @@ const prlabsService = {
     // Generación de imágenes
     async generateImage(prompt, options = {}) {
         try {
-            const response = await axios.post(`${API_BASE_URL}/image`, {
+            const response = await axios.post(`${API_CONFIG.BASE_URL}/prlabs/image`, {
                 prompt,
                 model: options.model || 'dall-e-3',
                 size: options.size || '1024x1024',
@@ -38,7 +34,7 @@ const prlabsService = {
     // Texto a voz
     async textToSpeech(text, options = {}) {
         try {
-            const response = await axios.post(`${API_BASE_URL}/voice`, {
+            const response = await axios.post(`${API_CONFIG.BASE_URL}/prlabs/voice`, {
                 text,
                 voice: options.voice || 'alloy',
                 model: options.model || 'tts-1'
@@ -52,7 +48,7 @@ const prlabsService = {
     // Generación de texto
     async generateText(prompt, model = 'gpt-4') {
         try {
-            const response = await axios.post(`${API_BASE_URL}/text`, {
+            const response = await axios.post(`${API_CONFIG.BASE_URL}/prlabs/text`, {
                 prompt,
                 model
             });

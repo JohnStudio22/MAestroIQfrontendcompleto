@@ -1,10 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-
-// Base URL de la API
-const API_MODE = process.env.REACT_APP_MODE || 'beta_v2';
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-const API_BASE_URL = `${API_URL}/${API_MODE}`;
+import { API_CONFIG } from '../../config/constants';
 
 // Credenciales para desarrollo
 const TEST_CREDENTIALS = {
@@ -74,7 +70,7 @@ export const loginUser = createAsyncThunk(
   async ({ email, password }, { rejectWithValue }) => {
     try {
       // Realizar petición al backend
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+      const response = await axios.post(`${API_CONFIG.AUTH_URL}/login`, {
         email,
         password
       });
@@ -103,7 +99,7 @@ export const registerUser = createAsyncThunk(
   async ({ name, email, password }, { rejectWithValue }) => {
     try {
       // Realizar petición al backend para registro
-      const response = await axios.post(`${API_BASE_URL}/auth/register`, {
+      const response = await axios.post(`${API_CONFIG.AUTH_URL}/register`, {
         name,
         email,
         password
@@ -124,7 +120,7 @@ export const registerWithGoogle = createAsyncThunk(
   'auth/registerWithGoogle',
   async ({ google_token, user_info }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/google-register`, {
+      const response = await axios.post(`${API_CONFIG.AUTH_URL}/google-register`, {
         google_token,
         user_info
       });
@@ -146,7 +142,7 @@ export const verifyEmail = createAsyncThunk(
   async ({ token }, { rejectWithValue }) => {
     try {
       // Verificar el email con el token
-      const response = await axios.post(`${API_BASE_URL}/auth/verify-email`, {
+      const response = await axios.post(`${API_CONFIG.AUTH_URL}/verify-email`, {
         verification_token: token
       });
       
@@ -165,7 +161,7 @@ export const resendVerificationEmail = createAsyncThunk(
   async ({ email }, { rejectWithValue }) => {
     try {
       // Reenviar email de verificación
-      const response = await axios.post(`${API_URL}/auth/resend-verification`, {
+      const response = await axios.post(`${API_CONFIG.AUTH_URL}/resend-verification`, {
         email
       });
       
@@ -209,7 +205,7 @@ export const changePassword = createAsyncThunk(
       setAuthToken(token);
       
       // Realizar petición al backend
-      const response = await axios.post(`${API_URL}/auth/change-password`, {
+      const response = await axios.post(`${API_CONFIG.AUTH_URL}/change-password`, {
         current_password: currentPassword,
         new_password: newPassword,
         confirm_password: confirmPassword
@@ -238,7 +234,7 @@ export const fetchUserInfo = createAsyncThunk(
       
       setAuthToken(token);
       
-      const response = await axios.get(`${API_BASE_URL}/auth/me`);
+      const response = await axios.get(`${API_CONFIG.AUTH_URL}/me`);
       return response.data;
     } catch (error) {
       if (error.response && error.response.data) {

@@ -1,9 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-
-const API_MODE = process.env.REACT_APP_MODE || 'beta_v1';
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-const API_BASE_URL = `${API_URL}/${API_MODE}`;
+import { API_CONFIG } from '../../config/constants';
 
 // Helper para determinar si el usuario puede usar una app
 const canUseApp = (user, mode) => {
@@ -27,7 +24,7 @@ export const fetchPurchasedApps = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const token = getState().auth.token || localStorage.getItem('token');
-      const response = await axios.get(`${API_BASE_URL}/apps/user/apps`, {
+      const response = await axios.get(`${API_CONFIG.APPS_URL}/user/apps`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -50,7 +47,7 @@ export const fetchFavoriteApps = createAsyncThunk(
     try {
       const token = getState().auth.token || localStorage.getItem('token');
       
-      const response = await axios.get(`${API_BASE_URL}/apps/user/favorites`, {
+      const response = await axios.get(`${API_CONFIG.APPS_URL}/user/favorites`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -87,7 +84,7 @@ export const purchaseApp = createAsyncThunk(
     
     // Solo usar peticiones reales al backend
     try {
-      const response = await axios.post(`${API_BASE_URL}/apps/user/apps/${appId}/purchase`, {}, {
+      const response = await axios.post(`${API_CONFIG.APPS_URL}/user/apps/${appId}/purchase`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -120,7 +117,7 @@ export const toggleFavoriteApp = createAsyncThunk(
     try {
       const token = getState().auth.token || localStorage.getItem('token');
       
-      const response = await axios.post(`${API_BASE_URL}/apps/user/apps/${appId}/favorite`, {}, {
+      const response = await axios.post(`${API_CONFIG.APPS_URL}/user/apps/${appId}/favorite`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -195,7 +192,7 @@ export const fetchApps = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const token = getState().auth.token || localStorage.getItem('token');
-      const response = await axios.get(`${API_BASE_URL}/apps/`, {
+      const response = await axios.get(`${API_CONFIG.APPS_URL}/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -219,7 +216,7 @@ export const fetchAppDetails = createAsyncThunk(
   async (appId, { rejectWithValue, getState }) => {
     try {
       const token = getState().auth.token || localStorage.getItem('token');
-      const response = await axios.get(`${API_BASE_URL}/apps/${appId}`, {
+      const response = await axios.get(`${API_CONFIG.APPS_URL}/${appId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       

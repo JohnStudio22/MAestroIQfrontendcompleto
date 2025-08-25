@@ -157,6 +157,13 @@ const PicPulse = () => {
     formData.append('gender', gender);
     formData.append('age_group', ageGroup);
 
+     // Logs para debugging
+     console.log('Archivo seleccionado:', selectedFile);
+     console.log('FormData contenido:');
+     for (let [key, value] of formData.entries()) {
+       console.log(`${key}:`, value);
+     }
+
     try {
       console.log('Enviando solicitud a:', `/api/${API_MODE}/picpulse/analyze-detailed`);
       const response = await axiosInstance.post(

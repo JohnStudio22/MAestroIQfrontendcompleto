@@ -71,9 +71,9 @@ const PicPulse = () => {
       throw new Error('Solo se permiten archivos PNG y JPG/JPEG');
     }
 
-    // Validar tamaño (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      throw new Error('El archivo no debe superar los 5MB');
+    // Validar tamaño (max 1MB para RapidAPI)
+    if (file.size > 1 * 1024 * 1024) {
+      throw new Error('El archivo no debe superar 1MB (límite de RapidAPI)');
     }
 
     // Validar nombre (no espacios ni caracteres especiales)
@@ -206,7 +206,7 @@ const PicPulse = () => {
           <ul>
             <li>Usa imágenes de logos o diseños de marca</li>
             <li>Evita fotos de personas o capturas de pantalla</li>
-            <li>Formato PNG o JPG/JPEG (max 5MB)</li>
+            <li>Formato PNG o JPG/JPEG (max 1MB - límite de RapidAPI)</li>
             <li>Dimensiones entre 100x100 y 4000x4000 píxeles</li>
             <li>Nombres sin espacios ni caracteres especiales</li>
           </ul>

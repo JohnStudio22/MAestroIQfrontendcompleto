@@ -1,258 +1,310 @@
-from flask import Blueprint, request, jsonify, current_app
-from flask_jwt_extended import jwt_required
-import requests
-import logging
-import re
-import json
-from api.utils.decorators import credits_required
+import React from 'react';
+import { useState } from 'react';
+import {
+  Container,
+  Paper,
+  Typography,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  styled,
+  Alert,
+  Box,
+  CircularProgress,
+  Tooltip
+} from '@mui/material';
+import axiosInstance from '../../config/axios';
 
-picpulse_bp = Blueprint('picpulse', __name__)
-logger = logging.getLogger(__name__)
+const API_MODE = process.env.REACT_APP_MODE || 'beta_v1';
 
-def sanitize_filename(filename):
-    """Sanitiza el nombre del archivo para asegurar compatibilidad con la API"""
-    # Obtener la extensión
-    ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
-    # Retornar un nombre seguro
-    return f"image.{ext}"
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  backgroundColor: '#272038',
+  color: '#ffffff',
+  padding: '24px',
+  marginBottom: '24px',
+  borderRadius: '12px',
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+}));
 
-@picpulse_bp.route('/analyze', methods=['POST'])
-@jwt_required()
-@credits_required(amount=2)  # PicPulse cuesta 2 puntos
-def analyze_image():
-    """Endpoint para análisis básico de imagen con PicPulse"""
-    try:
-        logger.info("[PICPULSE] Request files: %s", request.files)
-        logger.info("[PICPULSE] Request form: %s", request.form)
-        
-        # Verificar si se envió un archivo
-        if 'image' not in request.files:
-            logger.error("[PICPULSE] No se encontró archivo 'image' en request.files")
-            return jsonify({'error': 'No se proporcionó ninguna imagen'}), 400
-            
-        image_file = request.files['image']
-        logger.info("[PICPULSE] Image file: %s", image_file.filename)
-        
-        # Verificar si el archivo está vacío
-        if image_file.filename == '':
-            logger.error("[PICPULSE] Nombre de archivo vacío")
-            return jsonify({'error': 'Nombre de archivo vacío'}), 400
-            
-        # Verificar el tipo de archivo
-        allowed_extensions = {'png', 'jpg', 'jpeg'}
-        if not '.' in image_file.filename or \
-           image_file.filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
-            logger.error("[PICPULSE] Tipo de archivo no permitido: %s", image_file.filename)
-            return jsonify({'error': 'Tipo de archivo no permitido. Solo PNG, JPG, JPEG'}), 400
-        
-        # Verificar el tamaño del archivo (máximo 2MB)
-        image_file.seek(0, 2)  # Ir al final del archivo
-        file_size = image_file.tell()  # Obtener el tamaño
-        image_file.seek(0)  # Volver al inicio
-        
-        max_size = 2 * 1024 * 1024  # 2MB en bytes
-        if file_size > max_size:
-            logger.error("[PICPULSE] Archivo demasiado grande: %s bytes", file_size)
-            return jsonify({
-                'error': 'Archivo demasiado grande. Máximo 2MB permitido.',
-                'file_size': file_size,
-                'max_size': max_size
-            }), 400
-        
-        logger.info("[PICPULSE] Tamaño del archivo: %s bytes", file_size)
-        
-        # Obtener parámetros con valores por defecto
-        gender = request.form.get('gender', 'Male')
-        age_group = request.form.get('age_group', '25-34')
-        logger.info("[PICPULSE] Gender: %s, Age Group: %s", gender, age_group)
-        
-        url = "https://picpulse-automated-image-quality-scoring-with-psychology-ai1.p.rapidapi.com/analyze_image/"
-        
-        querystring = {
-            "gender": gender,
-            "age_group": age_group
-        }
-        
-        headers = {
-            "x-rapidapi-key": current_app.config['RAPIDAPI_KEY'],
-            "x-rapidapi-host": current_app.config['RAPIDAPI_PICPULSE_HOST']
-        }
-        
-        # Preparar archivo para envío
-        image_file.seek(0)
-        
-        # Usar el manejo nativo de requests para multipart/form-data
-        files = {
-            'image': ('image.png', image_file, 'image/png')
-        }
-        
-        headers = {
-            "x-rapidapi-key": current_app.config['RAPIDAPI_KEY'],
-            "x-rapidapi-host": current_app.config['RAPIDAPI_PICPULSE_HOST']
-        }
-        
-        logger.info("[PICPULSE] Enviando solicitud a RapidAPI")
-        logger.info(f"[PICPULSE] Files: {files}")
-        
-        response = requests.post(
-            url,
-            files=files,
-            headers=headers,
-            params=querystring
-        )
-        
-        if response.status_code != 200:
-            logger.error("[PICPULSE] Error en RapidAPI: %s", response.text)
-            return jsonify({
-                'error': 'Error en la API de PicPulse',
-                'details': response.text
-            }), response.status_code
-            
-        logger.info("[PICPULSE] Respuesta exitosa: %s", response.text)
-        return jsonify(response.json()), 200
-        
-    except requests.exceptions.RequestException as err:
-        logger.error("[PICPULSE] Error de conexión: %s", str(err))
-        return jsonify({
-            'error': 'Error de conexión con la API externa',
-            'details': str(err)
-        }), 502
-    except Exception as e:
-        logger.error("[PICPULSE] Error inesperado: %s", str(e))
-        return jsonify({
-            'error': 'Error interno del servidor',
-            'details': str(e)
-        }), 500
+const ImagePreview = styled('img')({
+  maxWidth: '100%',
+  maxHeight: '300px',
+  marginTop: '20px',
+  border: '2px dashed #6c5ce7',
+  borderRadius: '8px',
+  padding: '10px'
+});
 
-@picpulse_bp.route('/analyze-detailed', methods=['POST'])
-@jwt_required()
-@credits_required(amount=2)  # PicPulse detailed cuesta 2 puntos
-def analyze_image_detailed():
-    """Endpoint para análisis detallado de imagen con PicPulse"""
-    try:
-        logger.info("="*50)
-        logger.info("[PICPULSE] Iniciando nuevo análisis de imagen")
-        logger.info("[PICPULSE] Request files: %s", request.files)
-        logger.info("[PICPULSE] Request form: %s", request.form)
-        
-        # Verificar si se envió un archivo
-        if 'image' not in request.files:
-            logger.error("[PICPULSE] No se encontró archivo 'image' en request.files")
-            return jsonify({'error': 'No se proporcionó ninguna imagen'}), 400
-            
-        image_file = request.files['image']
-        logger.info("[PICPULSE] Nombre del archivo: %s", image_file.filename)
-        logger.info("[PICPULSE] Tipo MIME: %s", image_file.content_type)
-        
-        # Verificar si el archivo está vacío
-        if image_file.filename == '':
-            logger.error("[PICPULSE] Nombre de archivo vacío")
-            return jsonify({'error': 'Nombre de archivo vacío'}), 400
-            
-        # Verificar el tipo de archivo
-        allowed_extensions = {'png', 'jpg', 'jpeg'}
-        if not '.' in image_file.filename or \
-           image_file.filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
-            logger.error("[PICPULSE] Tipo de archivo no permitido: %s", image_file.filename)
-            return jsonify({'error': 'Tipo de archivo no permitido. Solo PNG, JPG, JPEG'}), 400
-        
-        # Verificar el tamaño del archivo (máximo 2MB)
-        image_file.seek(0, 2)  # Ir al final del archivo
-        file_size = image_file.tell()  # Obtener el tamaño
-        image_file.seek(0)  # Volver al inicio
-        
-        max_size = 2 * 1024 * 1024  # 2MB en bytes
-        if file_size > max_size:
-            logger.error("[PICPULSE] Archivo demasiado grande: %s bytes", file_size)
-            return jsonify({
-                'error': 'Archivo demasiado grande. Máximo 2MB permitido.',
-                'file_size': file_size,
-                'max_size': max_size
-            }), 400
-        
-        logger.info("[PICPULSE] Tamaño del archivo: %s bytes", file_size)
-        
-        gender = request.form.get('gender', 'Male')
-        age_group = request.form.get('age_group', '25-34')
-        logger.info("[PICPULSE] Parámetros - Gender: %s, Age Group: %s", gender, age_group)
-        
-        url = "https://picpulse-automated-image-quality-scoring-with-psychology-ai1.p.rapidapi.com/analyze_image_detailed/"
-        
-        # Leer el contenido del archivo
-        image_file.seek(0)
-        image_content = image_file.read()
-        logger.info("[PICPULSE] Tamaño de la imagen: %d bytes", len(image_content))
+const DropZone = styled('div')(({ isDragging }) => ({
+  border: `2px dashed ${isDragging ? '#6c5ce7' : '#444'}`,
+  borderRadius: '8px',
+  padding: '20px',
+  textAlign: 'center',
+  cursor: 'pointer',
+  marginTop: '20px',
+  backgroundColor: isDragging ? 'rgba(108, 92, 231, 0.1)' : 'transparent',
+  transition: 'all 0.3s ease'
+}));
 
-        # Usar un nombre de archivo seguro
-        safe_filename = sanitize_filename(image_file.filename)
-        
-        # Determinar el content type correcto
-        content_type = 'image/jpeg' if safe_filename.lower().endswith(('.jpg', '.jpeg')) else 'image/png'
-        
-        # Enviar todo en el FormData
-        files = {
-            'image': (safe_filename, image_content, content_type),
-            'gender': (None, gender),
-            'age_group': (None, age_group)
-        }
-        
-        headers = {
-            "x-rapidapi-key": current_app.config['RAPIDAPI_KEY'],
-            "x-rapidapi-host": current_app.config['RAPIDAPI_PICPULSE_HOST']
-        }
+const ResultCard = styled(Paper)({
+  backgroundColor: '#2d2649',
+  padding: '15px',
+  marginTop: '20px',
+  borderRadius: '8px'
+});
 
-        logger.info("[PICPULSE] Configuración de la petición:")
-        logger.info("  - URL: %s", url)
-        logger.info("  - Query params: %s", params)
-        logger.info("  - Headers: %s", {k: v for k, v in headers.items() if k != 'x-rapidapi-key'})
-        logger.info("  - Nombre archivo seguro: %s", safe_filename)
-        logger.info("  - Content-Type: %s", content_type)
-        logger.info("  - Tamaño archivo: %d bytes", len(image_content))
-        
-        logger.info("[PICPULSE] Enviando solicitud a RapidAPI...")
-        response = requests.post(
-            url,
-            files=files,
-            headers=headers
-        )
-        
-        if response.status_code != 200:
-            logger.error("[PICPULSE] Error en RapidAPI:")
-            logger.error("  - Status Code: %d", response.status_code)
-            logger.error("  - Response: %s", response.text)
-            try:
-                error_json = response.json()
-                logger.error("  - Error JSON: %s", json.dumps(error_json, indent=2))
-            except:
-                logger.error("  - No se pudo parsear la respuesta como JSON")
-            return jsonify({
-                'error': 'Error en la API de PicPulse',
-                'details': response.text
-            }), response.status_code
-            
-        logger.info("[PICPULSE] Respuesta exitosa:")
-        logger.info("  - Status Code: %d", response.status_code)
-        logger.info("  - Response: %s", response.text)
-        try:
-            result = response.json()
-            logger.info("  - Tiempo de atención: %s ms", result.get('attention_time_ms'))
-            logger.info("  - Probabilidad de gustar: %s%%", round(result.get('probability_of_liking', 0) * 100, 2))
-            logger.info("  - Puntuación combinada: %s", result.get('combined_score'))
-        except:
-            logger.error("  - No se pudo parsear la respuesta como JSON")
-        
-        logger.info("="*50)
-        return jsonify(response.json()), 200
-        
-    except requests.exceptions.RequestException as err:
-        logger.error("[PICPULSE] Error de conexión: %s", str(err))
-        return jsonify({
-            'error': 'Error de conexión con la API externa',
-            'details': str(err)
-        }), 502
-    except Exception as e:
-        logger.error("[PICPULSE] Error inesperado: %s", str(e))
-        return jsonify({
-            'error': 'Error interno del servidor',
-            'details': str(e)
-        }), 500 
+const PicPulse = () => {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [gender, setGender] = useState('Female');
+  const [ageGroup, setAgeGroup] = useState('25-34');
+  const [isDragging, setIsDragging] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const validateFile = (file) => {
+    // Validar tipo de archivo
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      throw new Error('Solo se permiten archivos PNG y JPG/JPEG');
+    }
+
+    // Validar tamaño (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error('El archivo no debe superar los 5MB');
+    }
+
+    // Validar nombre (no espacios ni caracteres especiales)
+    if (/[^a-zA-Z0-9._-]/.test(file.name)) {
+      throw new Error('El nombre del archivo solo debe contener letras, números, guiones y puntos');
+    }
+
+    // Validar dimensiones mínimas/máximas
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        if (img.width < 100 || img.height < 100) {
+          reject(new Error('La imagen debe tener al menos 100x100 píxeles'));
+        } else if (img.width > 4000 || img.height > 4000) {
+          reject(new Error('La imagen no debe exceder 4000x4000 píxeles'));
+        } else {
+          resolve();
+        }
+      };
+      img.onerror = () => reject(new Error('No se pudo cargar la imagen para validación'));
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleFileSelect = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      await validateFile(file);
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+      setError('');
+    } catch (err) {
+      setError(err.message);
+      setSelectedFile(null);
+      setPreviewUrl('');
+    }
+  };
+
+  const handleDrop = async (event) => {
+    event.preventDefault();
+    setIsDragging(false);
+
+    const file = event.dataTransfer.files?.[0];
+    if (!file) return;
+
+    try {
+      await validateFile(file);
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+      setError('');
+    } catch (err) {
+      setError(err.message);
+      setSelectedFile(null);
+      setPreviewUrl('');
+    }
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleAnalyze = async () => {
+    if (!selectedFile) {
+      setError('Por favor selecciona una imagen');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setResult(null);
+
+    const formData = new FormData();
+    formData.append('image', selectedFile);
+    formData.append('gender', gender);
+    formData.append('age_group', ageGroup);
+
+    // Logs para debugging
+    console.log('Archivo seleccionado:', selectedFile);
+    console.log('Parámetros:', { gender, ageGroup });
+    console.log('FormData contenido:');
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+
+    try {
+      console.log('Enviando solicitud a:', `/api/${API_MODE}/picpulse/analyze-detailed`);
+      const response = await axiosInstance.post(
+        `/api/${API_MODE}/picpulse/analyze-detailed`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      console.log('Respuesta:', response.data);
+      setResult(response.data);
+    } catch (err) {
+      console.error('Error completo:', err);
+      setError(err.response?.data?.details || err.response?.data?.error || 'Error al analizar la imagen');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Container maxWidth="xl" sx={{ mt: 3 }}>
+      <Box mb={4}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          PicPulse - Análisis de Imágenes
+        </Typography>
+        <Typography variant="subtitle1" color="text.secondary" paragraph>
+          Analiza el impacto psicológico y la calidad de tus imágenes usando IA avanzada
+        </Typography>
+      </Box>
+
+      <StyledPaper>
+        <Alert severity="info" sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Para mejores resultados:
+          </Typography>
+          <ul>
+            <li>Usa imágenes de logos o diseños de marca</li>
+            <li>Evita fotos de personas o capturas de pantalla</li>
+            <li>Formato PNG o JPG/JPEG (max 5MB)</li>
+            <li>Dimensiones entre 100x100 y 4000x4000 píxeles</li>
+            <li>Nombres sin espacios ni caracteres especiales</li>
+          </ul>
+        </Alert>
+
+        <FormControl fullWidth sx={{ mb: 3 }}>
+          <InputLabel>Género Objetivo</InputLabel>
+          <Select
+            value={gender}
+            onChange={(e) => setGender(e.target.value)}
+            label="Género Objetivo"
+          >
+            <MenuItem value="Female">Femenino</MenuItem>
+            <MenuItem value="Male">Masculino</MenuItem>
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth sx={{ mb: 3 }}>
+          <InputLabel>Grupo de Edad</InputLabel>
+          <Select
+            value={ageGroup}
+            onChange={(e) => setAgeGroup(e.target.value)}
+            label="Grupo de Edad"
+          >
+            <MenuItem value="25-34">25-34 años (Recomendado)</MenuItem>
+          </Select>
+        </FormControl>
+
+        <input
+          type="file"
+          accept="image/png,image/jpeg"
+          onChange={handleFileSelect}
+          style={{ display: 'none' }}
+          id="file-input"
+        />
+
+        <DropZone
+          isDragging={isDragging}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onClick={() => document.getElementById('file-input').click()}
+        >
+          <Typography>
+            {isDragging ? 'Suelta la imagen aquí' : 'Arrastra una imagen aquí o haz clic para seleccionar'}
+          </Typography>
+        </DropZone>
+
+        {previewUrl && (
+          <Box sx={{ textAlign: 'center', mt: 2 }}>
+            <ImagePreview src={previewUrl} alt="Preview" />
+          </Box>
+        )}
+
+        {error && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        <Button
+          variant="contained"
+          onClick={handleAnalyze}
+          disabled={!selectedFile || loading}
+          fullWidth
+          sx={{ mt: 3, height: '56px' }}
+        >
+          {loading ? <CircularProgress size={24} color="inherit" /> : 'Analizar Imagen'}
+        </Button>
+
+        {result && (
+          <ResultCard>
+            <Typography variant="h6" gutterBottom>
+              Resultados del Análisis
+            </Typography>
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body1">
+                <Tooltip title="Tiempo estimado que un usuario prestaría atención a la imagen">
+                  <span>⏱️ Tiempo de Atención: {result.attention_time_ms}ms</span>
+                </Tooltip>
+              </Typography>
+              <Typography variant="body1">
+                <Tooltip title="Probabilidad de que la imagen sea del agrado del público objetivo">
+                  <span>👍 Probabilidad de Gustar: {Math.round(result.probability_of_liking * 100)}%</span>
+                </Tooltip>
+              </Typography>
+              <Typography variant="body1">
+                <Tooltip title="Puntuación general combinada de la imagen">
+                  <span>🎯 Puntuación Combinada: {result.combined_score}/1000</span>
+                </Tooltip>
+              </Typography>
+            </Box>
+          </ResultCard>
+        )}
+      </StyledPaper>
+    </Container>
+  );
+};
+
+export default PicPulse; 

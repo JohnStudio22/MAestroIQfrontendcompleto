@@ -1,24 +1,24 @@
 import { useState } from 'react';
-import { 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  IconButton, 
-  Avatar, 
-  Box, 
-  Menu, 
-  MenuItem, 
-  ListItemIcon, 
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  Avatar,
+  Box,
+  Menu,
+  MenuItem,
+  ListItemIcon,
   ListItemText,
   Divider,
   TextField,
   InputAdornment,
   Switch
 } from '@mui/material';
-import { 
-  Settings, 
-  AccountCircle, 
-  Lock, 
+import {
+  Settings,
+  AccountCircle,
+  Lock,
   Logout,
   Search,
   Person,
@@ -71,6 +71,20 @@ import { logoutUser, selectUser } from '../../redux/slices/authSlice';
 import { addNotification } from '../../redux/slices/uiSlice';
 import NotificationBell from '../NotificationBell/NotificationBell';
 import CreditsDisplay from '../CreditsDisplay/CreditsDisplay';
+import wordCountLogo from '../../assets/images/apps/icons/wordcounticon.png';
+import googleNewsLogo from '../../assets/images/apps/icons/googlenewsicon.png';
+import perplexityLogo from '../../assets/images/apps/icons/perplexityicon.png';
+import mediafyLogo from '../../assets/images/apps/icons/mediafyicon.png';
+import picpulseLogo from '../../assets/images/apps/icons/Picpulseicon.png';
+import snapVideoLogo from '../../assets/images/apps/icons/snapvideoicon.png';
+import contentGeneratorLogo from '../../assets/images/apps/icons/contentcreatoricon.png';
+import similarWebLogo from '../../assets/images/apps/icons/similarwebicon.png';
+import speechToTextLogo from '../../assets/images/apps/icons/speechtotexticon.png';
+import imageTransformLogo from '../../assets/images/apps/icons/imagetransform-1.png';
+import sslCheckerLogo from '../../assets/images/apps/icons/SSLcheckericon.png';
+import keywordSearchLogo from '../../assets/images/apps/icons/keywordsearchicon.png';
+import whoisLookupLogo from '../../assets/images/apps/icons/Whoisicon.png';
+import productDescriptionLogo from '../../assets/images/apps/icons/productdescriptionicon.png';
 
 // AppBar estilizado con colores del diseño
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -175,13 +189,13 @@ const Navbar = () => {
   const location = useLocation();
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
-  
+
   // Estados para los menús
   const [anchorEl, setAnchorEl] = useState(null);
   const [settingsAnchor, setSettingsAnchor] = useState(null);
   const open = Boolean(anchorEl);
   const settingsOpen = Boolean(settingsAnchor);
-  
+
   // Estados para las configuraciones
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -246,12 +260,14 @@ const Navbar = () => {
       },
       '/apps/mediafy': {
         title: 'Mediafy',
-        icon: Instagram,
+        icon: null,
+        image: mediafyLogo,
         subtitle: 'Análisis completo de Instagram'
       },
       '/apps/perplexity': {
         title: 'Perplexity',
-        icon: ChatBubble,
+        icon: null,
+        image: perplexityLogo,
         subtitle: 'API de búsqueda inteligente'
       },
 
@@ -267,7 +283,8 @@ const Navbar = () => {
       },
       '/apps/google-news': {
         title: 'Google News',
-        icon: Article,
+        icon: null,
+        image: googleNewsLogo,
         subtitle: 'Noticias en tiempo real'
       },
       '/apps/tiktok': {
@@ -287,7 +304,8 @@ const Navbar = () => {
       },
       '/apps/ssl-checker': {
         title: 'SSL Checker',
-        icon: Security,
+        icon: null,
+        image: sslCheckerLogo,
         subtitle: 'Verificación de certificados SSL'
       },
       '/apps/website-status': {
@@ -297,17 +315,14 @@ const Navbar = () => {
       },
       '/apps/whois-lookup': {
         title: 'WHOIS',
-        icon: Dns,
+        icon: null,
+        image: whoisLookupLogo,
         subtitle: 'Consulta de información de dominio'
-      },
-      '/apps/seo-analyzer': {
-        title: 'SEO Analyzer',
-        icon: Analytics,
-        subtitle: 'Análisis de SEO'
       },
       '/apps/similar-web': {
         title: 'SimilarWeb',
-        icon: Visibility,
+        icon: null,
+        image: similarWebLogo,
         subtitle: 'Análisis de competencia'
       },
       '/apps/keyword-insights': {
@@ -321,23 +336,26 @@ const Navbar = () => {
         subtitle: 'Métricas de dominio'
       },
       '/apps/page-speed': {
-        title: 'Page Speed Insights',
-        icon: Speed,
-        subtitle: 'Análisis de velocidad'
+        title: 'Website Speed Test',
+        icon: Assessment,
+        subtitle: 'Análisis de velocidad y rendimiento web'
       },
       '/apps/product-description': {
-        title: 'Product Description',
-        icon: ShoppingCart,
+        title: 'AI eCommerce Product Description Generator',
+        icon: null,
+        image: productDescriptionLogo,
         subtitle: 'Generador de descripciones'
       },
       '/apps/seo-mastermind': {
         title: 'Keyword Search',
-        icon: SettingsIcon,
+        icon: null,
+        image: keywordSearchLogo,
         subtitle: 'Generador de keywords y meta tags'
       },
       '/apps/word-count': {
         title: 'Word Count',
-        icon: Functions,
+        icon: null,
+        image: wordCountLogo,
         subtitle: 'Contador de palabras'
       },
       '/apps/pdf-to-text': {
@@ -347,7 +365,8 @@ const Navbar = () => {
       },
       '/apps/snap-video': {
         title: 'SnapVideo',
-        icon: VideoLibrary,
+        icon: null,
+        image: snapVideoLogo,
         subtitle: 'Descarga de medios'
       },
       '/apps/genie-ai': {
@@ -357,24 +376,23 @@ const Navbar = () => {
       },
       '/apps/ai-social-media': {
         title: 'Content Generator',
-        icon: ContentCopy,
+        icon: null,
+        image: contentGeneratorLogo,
         subtitle: 'Generador de contenido'
       },
       '/apps/advanced-image': {
         title: 'Image Transform',
-        icon: Transform,
+        icon: null,
+        image: imageTransformLogo,
         subtitle: 'Manipulación avanzada de imágenes'
       },
       '/apps/picpulse': {
         title: 'PicPulse',
-        icon: Image,
+        icon: null,
+        image: picpulseLogo,
         subtitle: 'Análisis de imágenes'
       },
-      '/apps/whisper-url': {
-        title: 'Whisper from URL',
-        icon: Cloud,
-        subtitle: 'Transcripción de audio'
-      },
+
       '/apps/runway-ml': {
         title: 'Runway',
         icon: Psychology,
@@ -382,7 +400,8 @@ const Navbar = () => {
       },
       '/apps/speech-to-text': {
         title: 'Speech to Text',
-        icon: RecordVoiceOver,
+        icon: null,
+        image: speechToTextLogo,
         subtitle: 'Conversión de voz a texto'
       },
       '/apps/ai-humanizer': {
@@ -454,12 +473,12 @@ const Navbar = () => {
 
   // Obtener los datos de la aplicación actual
   const currentApp = getAppData(location.pathname);
-  
+
   // Controladores para el menú de usuario
   const handleOpenMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
-  
+
   const handleCloseMenu = () => {
     setAnchorEl(null);
   };
@@ -494,7 +513,7 @@ const Navbar = () => {
   // Manejador de opciones del menú
   const handleMenuOption = (option) => {
     handleCloseMenu();
-    
+
     switch (option) {
       case 'profile':
         navigate('/profile');
@@ -520,10 +539,10 @@ const Navbar = () => {
   // Obtener iniciales del usuario para mostrar en el Avatar
   const getUserInitials = () => {
     if (!user || !user.name) return 'U';
-    
+
     const nameParts = user.name.split(' ');
     if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
-    
+
     return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
   };
 
@@ -531,9 +550,29 @@ const Navbar = () => {
     <StyledAppBar position="static">
       <NavbarContent>
         <DynamicHeader>
-          {currentApp.icon && (
-            <AppIcon>
-              <currentApp.icon />
+          {(currentApp.icon || currentApp.image) && (
+            <AppIcon
+              sx={
+                currentApp.image
+                  ? { backgroundColor: 'transparent', p: 0 }
+                  : undefined
+              }
+            >
+              {currentApp.image ? (
+                <Box
+                  component="img"
+                  src={currentApp.image}
+                  alt={`${currentApp.title} logo`}
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: 'inherit',
+                    objectFit: 'cover'
+                  }}
+                />
+              ) : (
+                <currentApp.icon />
+              )}
             </AppIcon>
           )}
           <Box>
@@ -550,8 +589,8 @@ const Navbar = () => {
         <IconGroup>
           <CreditsDisplay />
           <NotificationBell />
-          <IconButton 
-            size="medium" 
+          <IconButton
+            size="medium"
             sx={{ color: 'white' }}
             onClick={handleSettingsOpen}
           >
@@ -626,18 +665,18 @@ const Navbar = () => {
               <ListItemIcon>
                 <Palette fontSize="small" />
               </ListItemIcon>
-              <ListItemText 
+              <ListItemText
                 primary="Tema"
                 secondary={isDarkMode ? "Modo Oscuro" : "Modo Claro"}
               />
               <Switch checked={isDarkMode} />
             </MenuItem>
-            
+
             <MenuItem onClick={handleLanguageChange}>
               <ListItemIcon>
                 <Language fontSize="small" />
               </ListItemIcon>
-              <ListItemText 
+              <ListItemText
                 primary="Idioma"
                 secondary="Español"
               />
@@ -650,11 +689,11 @@ const Navbar = () => {
                 Interfaz
               </Typography>
             </Box>
-            <MenuItem>
+            <MenuItem onClick={handleSettingsClose}>
               <ListItemIcon>
                 <ViewCompact fontSize="small" />
               </ListItemIcon>
-              <ListItemText 
+              <ListItemText
                 primary="Densidad"
                 secondary="Normal"
               />

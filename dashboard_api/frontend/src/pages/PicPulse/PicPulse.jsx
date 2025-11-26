@@ -255,7 +255,11 @@ const PicPulse = () => {
             onChange={(e) => setAgeGroup(e.target.value)}
             label="Grupo de Edad"
           >
+            <MenuItem value="18-24">18-24 años</MenuItem>
             <MenuItem value="25-34">25-34 años (Recomendado)</MenuItem>
+            <MenuItem value="35-44">35-44 años</MenuItem>
+            <MenuItem value="45-54">45-54 años</MenuItem>
+            <MenuItem value="55+">55+ años</MenuItem>
           </Select>
         </FormControl>
 

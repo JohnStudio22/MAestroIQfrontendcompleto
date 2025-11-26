@@ -67,7 +67,7 @@ const PageSpeedInsights = () => {
         params: { url: url },
         timeout: 90000  // 90 segundos de timeout (más que el backend de 60s)
       });
-      
+
       const data = response.data;
       if (data.error) {
         throw new Error(data.error || data.details || 'Error al analizar la velocidad del sitio web');
@@ -89,7 +89,7 @@ const PageSpeedInsights = () => {
     if (ms < 1000) {
       return `${Math.round(ms)}ms`;
     }
-    return `${(ms/1000).toFixed(2)}s`;
+    return `${(ms / 1000).toFixed(2)}s`;
   };
 
   // Helper para obtener el color del puntaje de velocidad
@@ -104,7 +104,7 @@ const PageSpeedInsights = () => {
   // Helper para mostrar las optimizaciones sugeridas
   const renderOptimizations = () => {
     const suggestions = [];
-    
+
     // Agregar sugerencias del análisis SEO
     if (result?.seo?.headings?.suggestion) {
       suggestions.push(...result.seo.headings.suggestion);
@@ -155,7 +155,7 @@ const PageSpeedInsights = () => {
             <ListItemIcon>
               <WarningIcon color="warning" />
             </ListItemIcon>
-            <ListItemText 
+            <ListItemText
               primary={issue.title || issue.problem}
               secondary={issue.description || issue.detail}
             />
@@ -178,9 +178,9 @@ const PageSpeedInsights = () => {
       <Grid container spacing={2} sx={{ mt: 1 }}>
         {keywords.keywords.slice(0, 5).map((keyword, index) => (
           <Grid item xs={12} sm={6} md={4} key={index}>
-            <Box sx={{ 
-              p: 2, 
-              border: 1, 
+            <Box sx={{
+              p: 2,
+              border: 1,
               borderColor: 'divider',
               borderRadius: 1,
               '&:hover': {
@@ -191,10 +191,10 @@ const PageSpeedInsights = () => {
                 {keyword.keyword}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Posición: {keyword.position || 'N/A'}
+                Posición: {keyword.position || keyword.rank || 'N/A'}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Volumen: {keyword.volume || 'N/A'}
+                Volumen: {keyword.volume || keyword.searchVolume || 'N/A'}
               </Typography>
             </Box>
           </Grid>
@@ -222,21 +222,23 @@ const PageSpeedInsights = () => {
               <Typography variant="h4" sx={{ mt: 1 }}>
                 {formatLoadTime(data?.speed?.data?.total_time)}
               </Typography>
-              <LinearProgress 
-                variant="determinate" 
+              <LinearProgress
+                variant="determinate"
                 value={Math.min((data?.speed?.data?.total_time || 0) * 100, 100)}
                 color={getSpeedColor(data?.speed?.data?.total_time)}
                 sx={{ mt: 1 }}
               />
             </Box>
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="body2" color="text.secondary">
-                Tamaño de página
-              </Typography>
-              <Typography variant="h6">
-                {formatBytes(data?.speed?.data?.size_download)}
-              </Typography>
-            </Box>
+            {data?.speed?.data?.size_download > 0 && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Tamaño de página
+                </Typography>
+                <Typography variant="h6">
+                  {formatBytes(data?.speed?.data?.size_download)}
+                </Typography>
+              </Box>
+            )}
           </Paper>
         </Grid>
 
@@ -250,22 +252,22 @@ const PageSpeedInsights = () => {
             <List dense>
               <ListItem>
                 <ListItemIcon><TitleIcon /></ListItemIcon>
-                <ListItemText 
-                  primary="Título" 
+                <ListItemText
+                  primary="Título"
                   secondary={`${data?.seo?.basic?.title || 'N/A'} (${data?.seo?.webtitle?.length || 0} caracteres)`}
                 />
               </ListItem>
               <ListItem>
                 <ListItemIcon><DescriptionIcon /></ListItemIcon>
-                <ListItemText 
-                  primary="Meta Descripción" 
+                <ListItemText
+                  primary="Meta Descripción"
                   secondary={`${data?.seo?.metadescription?.description || 'N/A'} (${data?.seo?.metadescription?.length || 0} caracteres)`}
                 />
               </ListItem>
               <ListItem>
                 <ListItemIcon><LinkIcon /></ListItemIcon>
-                <ListItemText 
-                  primary="Enlaces" 
+                <ListItemText
+                  primary="Enlaces"
                   secondary={`${data?.seo?.links?.count || 0} enlaces encontrados`}
                 />
               </ListItem>
@@ -284,7 +286,7 @@ const PageSpeedInsights = () => {
               <Grid item xs={6} sm={3}>
                 <Box sx={{ textAlign: 'center' }}>
                   <Typography variant="h4">
-                    {data?.backlinks?.counts?.backlinks?.total || 0}
+                    {data?.backlinks?.general?.counts?.backlinks?.total || 0}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Total Backlinks
@@ -294,7 +296,7 @@ const PageSpeedInsights = () => {
               <Grid item xs={6} sm={3}>
                 <Box sx={{ textAlign: 'center' }}>
                   <Typography variant="h4">
-                    {data?.backlinks?.counts?.backlinks?.doFollow || 0}
+                    {data?.backlinks?.general?.counts?.backlinks?.doFollow || 0}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     DoFollow
@@ -304,7 +306,7 @@ const PageSpeedInsights = () => {
               <Grid item xs={6} sm={3}>
                 <Box sx={{ textAlign: 'center' }}>
                   <Typography variant="h4">
-                    {data?.backlinks?.counts?.domains?.total || 0}
+                    {data?.backlinks?.general?.counts?.domains?.total || 0}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Dominios Únicos
@@ -314,7 +316,7 @@ const PageSpeedInsights = () => {
               <Grid item xs={6} sm={3}>
                 <Box sx={{ textAlign: 'center' }}>
                   <Typography variant="h4">
-                    {data?.backlinks?.counts?.backlinks?.toHomePage || 0}
+                    {data?.backlinks?.general?.counts?.backlinks?.toHomePage || 0}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     A Página Principal
@@ -352,7 +354,7 @@ const PageSpeedInsights = () => {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Header */}
       <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <Typography variant="h3" component="h1" gutterBottom sx={{ 
+        <Typography variant="h3" component="h1" gutterBottom sx={{
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
@@ -363,19 +365,19 @@ const PageSpeedInsights = () => {
         <Typography variant="h6" color="text.secondary" gutterBottom>
           Analiza la velocidad de carga y rendimiento de cualquier sitio web
         </Typography>
-        <Chip 
-          icon={<Star />} 
-          label="Costo: 1 punto por análisis" 
-          color="primary" 
+        <Chip
+          icon={<Star />}
+          label="Costo: 2 puntos por análisis"
+          color="primary"
           variant="outlined"
           sx={{ mt: 1 }}
         />
       </Box>
 
-      <Paper 
-        elevation={2} 
-        sx={{ 
-          p: 3, 
+      <Paper
+        elevation={2}
+        sx={{
+          p: 3,
           mt: 3,
           bgcolor: 'background.paper'
         }}
@@ -395,7 +397,7 @@ const PageSpeedInsights = () => {
             type="submit"
             disabled={loading}
             startIcon={loading ? <CircularProgress size={20} /> : <SpeedIcon />}
-            sx={{ 
+            sx={{
               height: '56px',
               flex: '0 0 auto',
               minWidth: '140px'
@@ -428,7 +430,7 @@ const PageSpeedInsights = () => {
         <>
           {/* Reemplazar el contenido existente con el nuevo renderMetrics */}
           {renderMetrics(result)}
-          
+
           {/* Mantener las sugerencias y consejos generales */}
           <Card sx={{ mt: 3 }}>
             <CardContent>

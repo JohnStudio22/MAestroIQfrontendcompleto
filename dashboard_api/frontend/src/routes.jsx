@@ -14,7 +14,6 @@ import Dashboard from './pages/Dashboard/Dashboard';
 import CategoryView from './pages/CategoryView/CategoryView';
 import SpeechToTextAI from './pages/SpeechToTextAI/SpeechToTextAI';
 import GoogleNews from './pages/GoogleNews/GoogleNews';
-import SeoAnalyzer from './pages/SeoAnalyzer/SeoAnalyzer';
 import PicPulse from './pages/PicPulse/PicPulse';
 
 const AppRoutes = () => {
@@ -24,7 +23,6 @@ const AppRoutes = () => {
                 <Route index element={<Dashboard />} />
                 <Route path="/category/:category" element={<CategoryView />} />
                 <Route path="/apps/speech-to-text" element={<SpeechToTextAI />} />
-                <Route path="/apps/seo-analyzer" element={<SeoAnalyzer />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password/:token" element={<ResetPassword />} />
 

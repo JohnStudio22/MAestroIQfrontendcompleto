@@ -85,7 +85,7 @@ const Chatbot = () => {
       </Box>
 
       <Card sx={{ height: '70vh', display: 'flex', flexDirection: 'column' }}>
-        <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <FormControl sx={{ mb: 2 }}>
             <InputLabel>Modelo</InputLabel>
             <Select
@@ -99,40 +99,43 @@ const Chatbot = () => {
             </Select>
           </FormControl>
 
-          <Paper 
-            sx={{ 
-              flex: 1, 
-              mb: 2, 
-              p: 2, 
-              overflow: 'auto',
-              backgroundColor: '#2d2d2d',
+          <Paper
+            sx={{
+              flex: 1,
+              mb: 2,
+              p: 2,
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              backgroundColor: '#272038',
               border: '1px solid #444'
             }}
           >
             <List>
               {messages.map((message, index) => (
                 <Box key={index}>
-                  <ListItem 
-                    sx={{ 
+                  <ListItem
+                    sx={{
                       justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start',
                       mb: 1
                     }}
                   >
-                    <Paper 
-                      sx={{ 
-                        p: 2, 
+                    <Paper
+                      sx={{
+                        p: 2,
                         maxWidth: '70%',
                         backgroundColor: message.sender === 'user' ? '#6a4c93' : '#444',
                         color: 'white',
                         border: '1px solid #555'
                       }}
                     >
-                      <ListItemText 
+                      <ListItemText
                         primary={message.text}
                         secondary={new Date(message.timestamp).toLocaleTimeString()}
                         sx={{
                           '& .MuiListItemText-primary': {
-                            color: 'white'
+                            color: 'white',
+                            whiteSpace: 'pre-wrap',
+                            wordBreak: 'break-word'
                           },
                           '& .MuiListItemText-secondary': {
                             color: '#ccc'

@@ -50,12 +50,14 @@ const AppCatalog = () => {
   }, [location.state, CATEGORIES]);
 
   // Filtrar apps según búsqueda y categoría actual
-  const filteredApps = purchasedApps.filter(app => {
-    const matchesSearch = app.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                        app.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = activeCategory === 'All' || app.category === activeCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredApps = purchasedApps
+    .filter(app => {
+      const matchesSearch = app.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          app.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = activeCategory === 'All' || app.category === activeCategory;
+      return matchesSearch && matchesCategory;
+    })
+    .filter(app => (app.id || app.app_id) !== 'seo-analyzer');
 
   // Función para obtener el ancho de las cards según el layout
   const getCardWidth = () => {
@@ -199,7 +201,12 @@ const AppCatalog = () => {
               
               return (
                 <Box key={app.app_id || app.id} sx={{ width: getCardWidth(), boxSizing: 'border-box'}}>
-                  <AppCard {...mappedApp} showFavorite={true} is_favorite={app.is_favorite} />
+                  <AppCard 
+                    {...mappedApp} 
+                    id={app.app_id || app.id}
+                    showFavorite={true} 
+                    is_favorite={app.is_favorite} 
+                  />
                 </Box>
               );
             })

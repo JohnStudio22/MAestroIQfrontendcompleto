@@ -70,6 +70,52 @@ const SpeechToTextAI = () => {
   const [taskId, setTaskId] = useState(null);
   const [taskStatus, setTaskStatus] = useState(null);
 
+  const actionButtonSx = {
+    height: 56,
+    borderRadius: 2,
+    textTransform: 'none',
+    fontWeight: 600
+  };
+
+  const inputSx = {
+    width: '100%',
+    '& .MuiOutlinedInput-root': {
+      height: 56,
+      borderRadius: 2,
+      '& fieldset': { borderColor: 'rgba(0,0,0,0.08)' },
+      '&:hover fieldset': { borderColor: 'rgba(0,0,0,0.12)' },
+      '&.Mui-focused fieldset': { borderColor: 'rgba(0,0,0,0.2)' }
+    },
+    '& .MuiInputBase-input': { height: 56, padding: '0 14px', boxSizing: 'border-box' }
+  };
+
+  const selectSx = {
+    '& .MuiOutlinedInput-root': {
+      height: 56,
+      borderRadius: 2,
+      '& fieldset': { borderColor: 'rgba(0,0,0,0.08)' },
+      '&:hover fieldset': { borderColor: 'rgba(0,0,0,0.12)' },
+      '&.Mui-focused fieldset': { borderColor: 'rgba(0,0,0,0.2)' }
+    },
+    '& .MuiSelect-select': {
+      padding: '10px 14px 8px',
+      display: 'flex',
+      alignItems: 'center',
+      boxSizing: 'border-box'
+    }
+  };
+
+  const selectFormControlSx = {
+    '& .MuiInputLabel-root': {
+      fontSize: 13,
+      padding: '0 6px'
+    },
+    '& .MuiInputLabel-shrink': {
+      padding: '0 6px',
+      backgroundColor: 'background.paper'
+    }
+  };
+
   // Efecto para monitorear transcripciones en cola
   useEffect(() => {
     let intervalId;
@@ -133,11 +179,21 @@ const SpeechToTextAI = () => {
       
       // La respuesta ya viene con el formato correcto
       setTranscription({
-        text: response.data.text,
+        text: (() => {
+          const apiData = response.data || {};
+
+          if (Array.isArray(apiData.chunks) && apiData.chunks.length > 0) {
+            return apiData.chunks
+              .map((chunk) => chunk.text)
+              .join('\n\n');
+          }
+
+          return apiData.text || '';
+        })(),
         metadata: {
-          duration: response.data.duration,
-          words: response.data.words,
-          confidence: response.data.confidence
+          duration: response.data?.duration,
+          words: response.data?.words,
+          confidence: response.data?.confidence
         }
       });
       setLoading(false);
@@ -200,8 +256,8 @@ const SpeechToTextAI = () => {
 
       <Paper sx={{ mb: 4, p: 3 }}>
         <form onSubmit={handleSubmit}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', flexWrap: { xs: 'wrap', md: 'nowrap' }, width: '100%' }}>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 0' }, minWidth: 0 }}>
               <TextField
                 fullWidth
                 label="URL del Audio/Video"
@@ -209,17 +265,18 @@ const SpeechToTextAI = () => {
                 onChange={(e) => setUrl(e.target.value)}
                 required
                 placeholder="https://ejemplo.com/audio.mp3 o https://youtube.com/watch?v=..."
-                helperText="Ingresa la URL del archivo a transcribir"
+                
+                sx={inputSx}
               />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth>
+            </Box>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '0 0 auto' }, minWidth: { xs: '100%', md: 200 } }}>
+              <FormControl fullWidth sx={selectFormControlSx}>
                 <InputLabel>Plataforma</InputLabel>
                 <Select
                   value={platform}
                   onChange={(e) => setPlatform(e.target.value)}
                   label="Plataforma"
+                  sx={selectSx}
                 >
                   {PLATFORMS.map((p) => (
                     <MenuItem key={p.value} value={p.value}>
@@ -231,15 +288,15 @@ const SpeechToTextAI = () => {
                   ))}
                 </Select>
               </FormControl>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth>
+            </Box>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '0 0 auto' }, minWidth: { xs: '100%', md: 200 } }}>
+              <FormControl fullWidth sx={selectFormControlSx}>
                 <InputLabel>Idioma</InputLabel>
                 <Select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
                   label="Idioma"
+                  sx={selectSx}
                 >
                   {LANGUAGES.map((lang) => (
                     <MenuItem key={lang.value} value={lang.value}>
@@ -251,21 +308,20 @@ const SpeechToTextAI = () => {
                   ))}
                 </Select>
               </FormControl>
-            </Grid>
-
-            <Grid item xs={12}>
+            </Box>
+            <Box sx={{ flex: { xs: '1 1 100%', md: '0 0 auto' }, minWidth: { xs: '100%', md: 160 } }}>
               <Button
                 type="submit"
                 variant="contained"
                 fullWidth
                 disabled={loading || (taskId && taskStatus !== 'failed')}
                 startIcon={loading ? <CircularProgress size={24} /> : <UploadIcon />}
-                sx={{ height: '56px' }}
+                sx={actionButtonSx}
               >
                 {loading ? 'Procesando...' : 'Transcribir'}
               </Button>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </form>
       </Paper>
 

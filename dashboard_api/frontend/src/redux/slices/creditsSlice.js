@@ -1,6 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { API_CONFIG } from '../../config/constants';
+
+const API_MODE = process.env.REACT_APP_MODE || 'beta_v1';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = `${API_URL}/${API_MODE}`;
 
 // Interceptor para actualizar créditos automáticamente
 axios.interceptors.response.use(
@@ -30,7 +33,7 @@ export const fetchCreditsBalance = createAsyncThunk(
         return rejectWithValue('No hay token de autenticación');
       }
       
-      const response = await axios.get(`${API_CONFIG.CREDITS_URL}/balance`, {
+      const response = await axios.get(`${API_BASE_URL}/credits/balance`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -51,7 +54,7 @@ export const deductCredits = createAsyncThunk(
         return rejectWithValue('No hay token de autenticación');
       }
       
-      const response = await axios.post(`${API_CONFIG.CREDITS_URL}/deduct`, 
+      const response = await axios.post(`${API_BASE_URL}/credits/deduct`, 
         { amount },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -78,7 +81,7 @@ export const addCredits = createAsyncThunk(
         payload.user_id = user_id;
       }
       
-      const response = await axios.post(`${API_CONFIG.CREDITS_URL}/add`, 
+      const response = await axios.post(`${API_BASE_URL}/credits/add`, 
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );

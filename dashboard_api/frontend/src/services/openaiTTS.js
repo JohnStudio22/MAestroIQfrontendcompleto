@@ -1,5 +1,11 @@
 import axios from 'axios';
-import { APP_CONFIG, API_CONFIG } from '../config/constants';
+import { APP_CONFIG } from '../config/constants';
+
+const API_URL = APP_CONFIG.API_URL;
+const API_MODE = process.env.REACT_APP_MODE || 'beta_v1';
+const API_BASE_URL = API_URL.endsWith('/api')
+  ? `${API_URL}/${API_MODE}`
+  : `${API_URL}/api/${API_MODE}`;
 
 // Configuración de axios con el token
 const getAxiosConfig = () => {
@@ -43,7 +49,7 @@ export const OUTPUT_FORMATS = [
 const openaiTTSService = {
     textToSpeech: async (text, options = {}) => {
         try {
-            const url = `${API_CONFIG.BASE_URL}/openai-tts/speech`;
+            const url = `${API_BASE_URL}/openai-tts/speech`;
             console.log('URL OpenAI TTS:', url);
             
             // Configurar axios para recibir una respuesta blob

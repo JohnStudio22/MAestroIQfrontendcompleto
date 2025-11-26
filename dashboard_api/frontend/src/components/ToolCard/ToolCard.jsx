@@ -131,13 +131,17 @@ const ToolCard = ({
 
   const handleClick = (e) => {
     e.preventDefault();
-    onClick();
+    if (typeof onClick === 'function') {
+      onClick();
+    }
   };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      onClick();
+      if (typeof onClick === 'function') {
+        onClick();
+      }
     }
   };
 

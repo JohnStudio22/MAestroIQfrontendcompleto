@@ -1,6 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { API_CONFIG } from '../../config/constants';
+
+const API_MODE = process.env.REACT_APP_MODE || 'beta_v1';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = `${API_URL}/${API_MODE}`;
 
 // Helper para determinar si el usuario puede usar una app
 const canUseApp = (user, mode) => {
@@ -24,7 +27,7 @@ export const fetchPurchasedApps = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const token = getState().auth.token || localStorage.getItem('token');
-      const response = await axios.get(`${API_CONFIG.APPS_URL}/user/apps`, {
+      const response = await axios.get(`${API_BASE_URL}/apps/user/apps`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -47,7 +50,7 @@ export const fetchFavoriteApps = createAsyncThunk(
     try {
       const token = getState().auth.token || localStorage.getItem('token');
       
-      const response = await axios.get(`${API_CONFIG.APPS_URL}/user/favorites`, {
+      const response = await axios.get(`${API_BASE_URL}/apps/user/favorites`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -84,7 +87,7 @@ export const purchaseApp = createAsyncThunk(
     
     // Solo usar peticiones reales al backend
     try {
-      const response = await axios.post(`${API_CONFIG.APPS_URL}/user/apps/${appId}/purchase`, {}, {
+      const response = await axios.post(`${API_BASE_URL}/apps/user/apps/${appId}/purchase`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -117,18 +120,15 @@ export const toggleFavoriteApp = createAsyncThunk(
     try {
       const token = getState().auth.token || localStorage.getItem('token');
       
-      const response = await axios.post(`${API_CONFIG.APPS_URL}/user/apps/${appId}/favorite`, {}, {
+      const response = await axios.post(`${API_BASE_URL}/apps/user/apps/${appId}/favorite`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      // Validar que la respuesta tenga la estructura esperada
-      if (!response.data || !response.data.app) {
-        console.warn('toggleFavoriteApp: respuesta del backend sin estructura esperada', response.data);
-        return rejectWithValue('Respuesta del servidor inválida');
-      }
-      
-      // Después de cambiar el favorito, recargar las apps favoritas
-      await dispatch(fetchFavoriteApps());
+      // Después de cambiar el favorito, recargar tanto las apps favoritas como las apps compradas
+      await Promise.all([
+        dispatch(fetchFavoriteApps()),
+        dispatch(fetchPurchasedApps())
+      ]);
       
       return response.data.app;
     } catch (error) {
@@ -192,7 +192,7 @@ export const fetchApps = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const token = getState().auth.token || localStorage.getItem('token');
-      const response = await axios.get(`${API_CONFIG.APPS_URL}/`, {
+      const response = await axios.get(`${API_BASE_URL}/apps/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -216,7 +216,7 @@ export const fetchAppDetails = createAsyncThunk(
   async (appId, { rejectWithValue, getState }) => {
     try {
       const token = getState().auth.token || localStorage.getItem('token');
-      const response = await axios.get(`${API_CONFIG.APPS_URL}/${appId}`, {
+      const response = await axios.get(`${API_BASE_URL}/apps/${appId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -304,37 +304,35 @@ const appsSlice = createSlice({
       })
       // Toggle favorite
       .addCase(toggleFavoriteApp.fulfilled, (state, action) => {
-        // Validar que action.payload existe y tiene la estructura esperada
-        if (!action.payload || typeof action.payload !== 'object') {
-          console.warn('toggleFavoriteApp.fulfilled: payload inválido', action.payload);
-          return;
-        }
-
-        const appId = action.payload.app_id || action.payload.id;
-        if (!appId) {
-          console.warn('toggleFavoriteApp.fulfilled: app_id no encontrado en payload', action.payload);
-          return;
-        }
-
+        const payloadAppId = action.payload.app_id || action.payload.id;
+        const payloadIsFavorite = action.payload.is_favorite;
+        
         // Actualiza el estado de favorito en purchasedApps
-        const idx = state.purchasedApps.findIndex(app => (app.app_id || app.id) === appId);
+        // Buscar por diferentes variaciones de ID
+        const idx = state.purchasedApps.findIndex(app => {
+          const appId = app.app_id || app.id;
+          return appId === payloadAppId;
+        });
+        
         if (idx !== -1) {
-          state.purchasedApps[idx].is_favorite = action.payload.is_favorite;
+          state.purchasedApps[idx].is_favorite = payloadIsFavorite;
         }
         
         // Actualiza la lista de favoritas
-        if (action.payload.is_favorite) {
+        if (payloadIsFavorite) {
           // Verificar si ya existe antes de agregar
-          const exists = state.favoriteApps.some(app => 
-            (app.app_id || app.id) === appId
-          );
+          const exists = state.favoriteApps.some(app => {
+            const appId = app.app_id || app.id;
+            return appId === payloadAppId;
+          });
           if (!exists) {
             state.favoriteApps.push(action.payload);
           }
         } else {
-          state.favoriteApps = state.favoriteApps.filter(app => 
-            (app.app_id || app.id) !== appId
-          );
+          state.favoriteApps = state.favoriteApps.filter(app => {
+            const appId = app.app_id || app.id;
+            return appId !== payloadAppId;
+          });
         }
       })
       .addCase(fetchAllApps.pending, (state) => {

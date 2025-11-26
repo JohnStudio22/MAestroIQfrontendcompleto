@@ -94,28 +94,76 @@ const PRLabsDashboard = () => {
     if (feature.id === 'chat-models' || feature.id === 'custom-chatbots') {
       return (
         <Tooltip title="Costo por solicitud exitosa. Modelos premium pueden costar 2 puntos. Con imagen: +1 punto.">
-          <Chip label={`Puntos: desde ${getChatCost('gpt-4o-mini', false)}`} size="small" color="secondary" />
+          <Box
+            sx={{
+              px: 1.5,
+              py: 0.5,
+              borderRadius: 2,
+              bgcolor: 'rgba(59,130,246,0.15)',
+              color: 'secondary.main',
+              fontSize: '0.75rem',
+              fontWeight: 600
+            }}
+          >
+            {`Puntos: desde ${getChatCost('gpt-4o-mini', false)}`}
+          </Box>
         </Tooltip>
       );
     }
     if (feature.id === 'image-generation') {
       return (
         <Tooltip title="Costo por imagen generada exitosa">
-          <Chip label={`Puntos: ${PR_LABS_CONFIG.COSTS.IMAGE}`} size="small" color="secondary" />
+          <Box
+            sx={{
+              px: 1.5,
+              py: 0.5,
+              borderRadius: 2,
+              bgcolor: 'rgba(59,130,246,0.15)',
+              color: 'secondary.main',
+              fontSize: '0.75rem',
+              fontWeight: 600
+            }}
+          >
+            {`Puntos: ${PR_LABS_CONFIG.COSTS.IMAGE}`}
+          </Box>
         </Tooltip>
       );
     }
     if (feature.id === 'voice-features') {
       return (
         <Tooltip title="Costo por conversión exitosa (TTS/STT)">
-          <Chip label={`Puntos: ${PR_LABS_CONFIG.COSTS.VOICE}`} size="small" color="secondary" />
+          <Box
+            sx={{
+              px: 1.5,
+              py: 0.5,
+              borderRadius: 2,
+              bgcolor: 'rgba(59,130,246,0.15)',
+              color: 'secondary.main',
+              fontSize: '0.75rem',
+              fontWeight: 600
+            }}
+          >
+            {`Puntos: ${PR_LABS_CONFIG.COSTS.VOICE}`}
+          </Box>
         </Tooltip>
       );
     }
     if (feature.id === 'text-processing') {
       return (
         <Tooltip title="Costo por solicitud exitosa">
-          <Chip label={`Puntos: ${PR_LABS_CONFIG.COSTS.TEXT}`} size="small" color="secondary" />
+          <Box
+            sx={{
+              px: 1.5,
+              py: 0.5,
+              borderRadius: 2,
+              bgcolor: 'rgba(59,130,246,0.15)',
+              color: 'secondary.main',
+              fontSize: '0.75rem',
+              fontWeight: 600
+            }}
+          >
+            {`Puntos: ${PR_LABS_CONFIG.COSTS.TEXT}`}
+          </Box>
         </Tooltip>
       );
     }
@@ -154,41 +202,42 @@ const PRLabsDashboard = () => {
       </Box>
 
       {/* Quick Stats */}
-      <Grid container spacing={3} mb={6}>
-        <Grid item xs={12} md={4}>
-          <StatsCard elevation={2}>
-            <PerformanceIcon color="primary" />
-            <Box>
-              <Typography variant="h6">Rendimiento</Typography>
-              <Typography variant="body2" color="text.secondary">
-                99.9% Uptime
-              </Typography>
-            </Box>
-          </StatsCard>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <StatsCard elevation={2}>
-            <InsightsIcon color="primary" />
-            <Box>
-              <Typography variant="h6">Precisión</Typography>
-              <Typography variant="body2" color="text.secondary">
-                95% Promedio
-              </Typography>
-            </Box>
-          </StatsCard>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <StatsCard elevation={2}>
-            <PerformanceIcon color="primary" />
-            <Box>
-              <Typography variant="h6">Velocidad</Typography>
-              <Typography variant="body2" color="text.secondary">
-                &lt; 500ms Respuesta
-              </Typography>
-            </Box>
-          </StatsCard>
-        </Grid>
-      </Grid>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(auto-fit, minmax(280px, 1fr))' },
+          gap: 3,
+          mb: 6
+        }}
+      >
+        <StatsCard elevation={2} sx={{ width: '100%' }}>
+          <PerformanceIcon color="primary" />
+          <Box>
+            <Typography variant="h6">Rendimiento</Typography>
+            <Typography variant="body2" color="text.secondary">
+              99.9% Uptime
+            </Typography>
+          </Box>
+        </StatsCard>
+        <StatsCard elevation={2} sx={{ width: '100%' }}>
+          <InsightsIcon color="primary" />
+          <Box>
+            <Typography variant="h6">Precisión</Typography>
+            <Typography variant="body2" color="text.secondary">
+              95% Promedio
+            </Typography>
+          </Box>
+        </StatsCard>
+        <StatsCard elevation={2} sx={{ width: '100%' }}>
+          <PerformanceIcon color="primary" />
+          <Box>
+            <Typography variant="h6">Velocidad</Typography>
+            <Typography variant="body2" color="text.secondary">
+              &lt; 500ms Respuesta
+            </Typography>
+          </Box>
+        </StatsCard>
+      </Box>
 
       {/* Features Grid */}
       <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }} gap={3}>

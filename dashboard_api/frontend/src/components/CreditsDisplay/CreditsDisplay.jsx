@@ -3,14 +3,13 @@ import { Box, Typography, Chip, CircularProgress } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCreditsBalance, selectCreditsBalance, selectCreditsLoading } from '../../redux/slices/creditsSlice';
 import { selectIsAuthenticated } from '../../redux/slices/authSlice';
-import { API_CONFIG } from '../../config/constants';
 
 const CreditsDisplay = () => {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const credits = useSelector(selectCreditsBalance);
   const loading = useSelector(selectCreditsLoading);
-  const mode = API_CONFIG.MODE;
+  const mode = process.env.REACT_APP_MODE || 'beta_v1';
 
   useEffect(() => {
     // Solo cargar créditos si está autenticado y en beta_v2

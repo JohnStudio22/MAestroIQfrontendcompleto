@@ -109,24 +109,6 @@ const Dashboard = () => {
             setDrawerOpen(true);
           }
         },
-        {
-          id: 'crypto-tracker',
-          title: 'Crypto Tracker',
-          imageUrl: '🚀', // Placeholder con emoji
-          onClick: () => {
-            setSelectedApp({
-              id: 'crypto-tracker',
-              title: 'Crypto Tracker',
-              description: 'Monitorea precios, gráficos y datos de trading de criptomonedas en tiempo real con datos de Binance',
-              imageUrl: '🚀', // Placeholder con emoji
-              category: 'Social Listening',
-              route: '/apps/crypto-tracker',
-              apiName: 'Crypto Tracker',
-            });
-            setDrawerOpen(true);
-          }
-        },
-
       ]
     },
     {

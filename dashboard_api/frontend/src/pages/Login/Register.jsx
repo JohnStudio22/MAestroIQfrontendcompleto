@@ -81,7 +81,7 @@ const Register = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isAuthenticated, loading, error } = useAppSelector(selectAuth);
-  const { isGoogleLoaded, signInWithGoogle}
+  const { isGoogleLoaded, signInWithGoogle } = useGoogleAuth();
   
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);

@@ -4,8 +4,6 @@ import { registerWithGoogle } from '../redux/slices/authSlice';
 import { addNotification } from '../redux/slices/uiSlice';
 import { APP_CONFIG, MESSAGES } from '../config/constants';
 
-const GOOGLE_BUTTON_WIDTH = 320;
-
 export const useGoogleAuth = () => {
   const dispatch = useAppDispatch();
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
@@ -34,7 +32,7 @@ export const useGoogleAuth = () => {
           callback: handleGoogleResponse,
           auto_select: false,
           cancel_on_tap_outside: true,
-          use_fedcm_for_prompt: true,
+          use_fedcm_for_prompt: false,
         });
       } catch (error) {
         console.error('Error al inicializar Google OAuth:', error);
@@ -112,8 +110,7 @@ export const useGoogleAuth = () => {
             {
               theme: 'outline',
               size: 'large',
-              width: GOOGLE_BUTTON_WIDTH,
-              use_fedcm_for_prompt: true,
+              width: '100%',
             }
           );
         }
@@ -138,9 +135,8 @@ export const useGoogleAuth = () => {
           theme: 'outline',
           size: 'large',
           text: 'continue_with',
-          width: GOOGLE_BUTTON_WIDTH,
+          width: '100%',
           logo_alignment: 'left',
-          use_fedcm_for_prompt: true,
         }
       );
     } catch (error) {

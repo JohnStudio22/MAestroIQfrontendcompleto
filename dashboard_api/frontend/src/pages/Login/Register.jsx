@@ -108,20 +108,6 @@ const Register = () => {
     };
   }, [dispatch]);
 
-  // Renderizar botón de Google cuando esté disponible
-  useEffect(() => {
-    if (isGoogleLoaded) {
-      renderGoogleButton('google-signin-button');
-    }
-  }, [isGoogleLoaded, renderGoogleButton]);
-
-  // Renderizar botón de Google cuando esté disponible
-  useEffect(() => {
-    if (isGoogleLoaded) {
-      renderGoogleButton('google-signin-button');
-    }
-  }, [isGoogleLoaded, renderGoogleButton]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({

@@ -122,16 +122,26 @@ export const registerUser = createAsyncThunk(
 
 export const registerWithGoogle = createAsyncThunk(
   'auth/registerWithGoogle',
-  async ({ google_token, user_info }, { rejectWithValue }) => {
+  async ({ google_token, access_token, user_info }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/google-register`, {
-        google_token,
-        user_info
-      });
-      const { user, access_token } = response.data;
-      localStorage.setItem('token', access_token);
-      setAuthToken(access_token);
-      return { user, token: access_token };
+      const payload = {};
+      
+      // Soportar ambos flujos: JWT token o access token
+      if (google_token) {
+        payload.google_token = google_token;
+      }
+      if (access_token) {
+        payload.access_token = access_token;
+      }
+      if (user_info) {
+        payload.user_info = user_info;
+      }
+      
+      const response = await axios.post(`${API_BASE_URL}/auth/google-register`, payload);
+      const { user, access_token: jwt_token } = response.data;
+      localStorage.setItem('token', jwt_token);
+      setAuthToken(jwt_token);
+      return { user, token: jwt_token };
     } catch (error) {
       if (error.response && error.response.data) {
         return rejectWithValue(error.response.data.message || 'Error en el registro con Google');

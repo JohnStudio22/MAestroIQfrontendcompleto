@@ -264,6 +264,7 @@ const Register = () => {
         }}
       >
         {/* Registro con Google */}
+        <Box id="google-signin-button" sx={{ display: 'none' }} />
         <GoogleButton
           fullWidth
           variant="contained"

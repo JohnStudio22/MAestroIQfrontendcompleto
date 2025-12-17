@@ -81,7 +81,7 @@ const Register = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isAuthenticated, loading, error } = useAppSelector(selectAuth);
-  const { isGoogleLoaded, signInWithGoogle } = useGoogleAuth();
+  const { isGoogleLoaded, signInWithGoogle}
   
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -107,6 +107,20 @@ const Register = () => {
       dispatch(clearErrors());
     };
   }, [dispatch]);
+
+  // Renderizar botón de Google cuando esté disponible
+  useEffect(() => {
+    if (isGoogleLoaded) {
+      renderGoogleButton('google-signin-button');
+    }
+  }, [isGoogleLoaded, renderGoogleButton]);
+
+  // Renderizar botón de Google cuando esté disponible
+  useEffect(() => {
+    if (isGoogleLoaded) {
+      renderGoogleButton('google-signin-button');
+    }
+  }, [isGoogleLoaded, renderGoogleButton]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -263,8 +277,7 @@ const Register = () => {
           maxWidth: 400,
         }}
       >
-        {/* Registro con Google */}
-        <Box id="google-signin-button" sx={{ display: 'none' }} />
+        {/* Botón de Google */}
         <GoogleButton
           fullWidth
           variant="contained"
@@ -278,7 +291,6 @@ const Register = () => {
               sx={{
                 width: 20,
                 height: 20,
-                
               }}
             />
           }

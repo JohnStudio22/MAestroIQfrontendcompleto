@@ -8,14 +8,14 @@ export const useGoogleAuth = () => {
   const dispatch = useAppDispatch();
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [tokenClient, setTokenClient] = useState(null);
 
   // Verificar si Google OAuth está cargado
   useEffect(() => {
     const checkGoogleLoaded = () => {
-      if (window.google && window.google.accounts) {
+      if (window.google && window.google.accounts && window.google.accounts.oauth2) {
         setIsGoogleLoaded(true);
       } else {
-        // Reintentar después de un tiempo
         setTimeout(checkGoogleLoaded, 1000);
       }
     };
@@ -23,17 +23,17 @@ export const useGoogleAuth = () => {
     checkGoogleLoaded();
   }, []);
 
-  // Inicializar Google OAuth cuando esté disponible
+  // Inicializar Google OAuth2 cuando esté disponible
   useEffect(() => {
     if (isGoogleLoaded && APP_CONFIG.GOOGLE_CLIENT_ID) {
       try {
-        window.google.accounts.id.initialize({
+        // Inicializar el cliente OAuth2 para popup
+        const client = window.google.accounts.oauth2.initTokenClient({
           client_id: APP_CONFIG.GOOGLE_CLIENT_ID,
+          scope: 'openid email profile',
           callback: handleGoogleResponse,
-          auto_select: false,
-          cancel_on_tap_outside: true,
-          use_fedcm_for_prompt: false,
         });
+        setTokenClient(client);
       } catch (error) {
         console.error('Error al inicializar Google OAuth:', error);
       }
@@ -41,10 +41,10 @@ export const useGoogleAuth = () => {
   }, [isGoogleLoaded]);
 
   // Manejar la respuesta de Google
-  const handleGoogleResponse = useCallback(async (response) => {
-    if (!response.credential) {
+  const handleGoogleResponse = useCallback(async (tokenResponse) => {
+    if (!tokenResponse || !tokenResponse.access_token) {
       dispatch(addNotification({
-        message: 'No se recibieron credenciales de Google',
+        message: 'No se recibió el token de acceso de Google',
         type: 'error'
       }));
       return;
@@ -53,16 +53,27 @@ export const useGoogleAuth = () => {
     setIsLoading(true);
     
     try {
-      // Decodificar el JWT para obtener información del usuario
-      const payload = JSON.parse(atob(response.credential.split('.')[1]));
+      // Obtener información del usuario usando el access token
+      const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: {
+          Authorization: `Bearer ${tokenResponse.access_token}`
+        }
+      });
+
+      if (!userInfoResponse.ok) {
+        throw new Error('Error al obtener información del usuario');
+      }
+
+      const userInfo = await userInfoResponse.json();
       
-      // Enviar el token al backend
+      // Enviar los datos al backend
       const resultAction = await dispatch(registerWithGoogle({
-        google_token: response.credential,
+        access_token: tokenResponse.access_token,
         user_info: {
-          name: payload.name,
-          email: payload.email,
-          picture: payload.picture,
+          name: userInfo.name,
+          email: userInfo.email,
+          picture: userInfo.picture,
+          google_id: userInfo.sub,
         }
       }));
       
@@ -70,6 +81,11 @@ export const useGoogleAuth = () => {
         dispatch(addNotification({
           message: MESSAGES.SUCCESS.GOOGLE_AUTH,
           type: 'success'
+        }));
+      } else {
+        dispatch(addNotification({
+          message: resultAction.payload?.message || 'Error al registrar con Google',
+          type: 'error'
         }));
       }
     } catch (error) {
@@ -83,7 +99,7 @@ export const useGoogleAuth = () => {
     }
   }, [dispatch]);
 
-  // Función para mostrar el popup de Google
+  // Función para abrir el popup de Google OAuth
   const signInWithGoogle = useCallback(() => {
     if (!isGoogleLoaded) {
       dispatch(addNotification({
@@ -101,54 +117,30 @@ export const useGoogleAuth = () => {
       return;
     }
 
-    try {
-      window.google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // Mostrar el popup de One Tap si no se muestra automáticamente
-          window.google.accounts.id.renderButton(
-            document.getElementById('google-signin-button'),
-            {
-              theme: 'outline',
-              size: 'large',
-              width: '100%',
-            }
-          );
-        }
-      });
-    } catch (error) {
-      console.error('Error al mostrar Google Sign-In:', error);
+    if (!tokenClient) {
       dispatch(addNotification({
-        message: 'Error al inicializar Google Sign-In',
+        message: 'Cliente de Google no está inicializado',
+        type: 'error'
+      }));
+      return;
+    }
+
+    try {
+      // Solicitar token - esto abrirá el popup de Google
+      tokenClient.requestAccessToken({ prompt: 'select_account' });
+    } catch (error) {
+      console.error('Error al abrir popup de Google:', error);
+      dispatch(addNotification({
+        message: 'Error al abrir la ventana de Google',
         type: 'error'
       }));
     }
-  }, [isGoogleLoaded, dispatch]);
-
-  // Función para renderizar el botón de Google
-  const renderGoogleButton = useCallback((elementId) => {
-    if (!isGoogleLoaded || !APP_CONFIG.GOOGLE_CLIENT_ID) return;
-
-    try {
-      window.google.accounts.id.renderButton(
-        document.getElementById(elementId),
-        {
-          theme: 'outline',
-          size: 'large',
-          text: 'continue_with',
-          width: '100%',
-          logo_alignment: 'left',
-        }
-      );
-    } catch (error) {
-      console.error('Error al renderizar botón de Google:', error);
-    }
-  }, [isGoogleLoaded]);
+  }, [isGoogleLoaded, tokenClient, dispatch]);
 
   return {
     isGoogleLoaded,
     isLoading,
     signInWithGoogle,
-    renderGoogleButton,
   };
 };
 
